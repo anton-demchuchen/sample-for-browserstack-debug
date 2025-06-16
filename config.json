@@ -1,0 +1,13 @@
+{
+    "browser": "chrome",
+    "device": "real device",
+    "platform": "desktop",
+    "headless_mode": false,
+    "environment": "dev",
+    "experiment": "enrollment_hycs_v2",
+    "timeout": 10,
+    "loglevel": "INFO",
+    "appium_host": "127.0.0.1",
+    "appium_port": 4723,
+    "data_layers": "false"
+}

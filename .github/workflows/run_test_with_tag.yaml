@@ -1,0 +1,63 @@
+name: Run Test with Tag
+on:
+#  pull_request:
+#    branches: [ 'develop' ]
+
+  workflow_dispatch:
+    inputs:
+#      distinct_id:
+      test_type:
+        description: 'Enter test scenario tag'
+        required: false
+        type: string
+
+jobs:
+  run-test-with-tag:
+    name: 'Run Test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: echo distinct ID ${{ github.event.inputs.distinct_id }}
+        run: echo ${{ github.event.inputs.distinct_id }}
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - name: 'Set up Python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: 'BrowserStack Env Setup'
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          build-name: Run Test by Tag BUILD_INFO
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+
+      - name: 'Create virtual environment'
+        run: |
+          python -c "import sys; print(sys.version)"
+          python3 -m venv .venv
+          ls -al
+          echo ".venv directory"
+          ls .venv
+          echo ".venv directory\bin"
+          ls .venv/bin
+
+      - name: 'Install requirements and Activate Virtual Environment'
+        run: |
+          source .venv/bin/activate
+          pip install -r requirements.txt
+          pip install browserstack-sdk
+          echo ".venv directory\bin"
+          ls .venv/bin
+
+      - name: 'Server location'
+        run: |
+          public_ip=$(curl -s https://api.ipify.org?format=json | jq -r '.ip')
+          echo "Public IP: $public_ip"
+          location=$(curl -s https://ipinfo.io/$public_ip/json)
+          echo "Server Location: $location"
+
+      - name: 'Tests Execution'
+        run: ./.venv/bin/browserstack-sdk pytest -s -m ${{ github.event.inputs.test_type }}
+        if: always()
